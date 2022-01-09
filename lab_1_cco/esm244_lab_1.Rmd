@@ -104,7 +104,57 @@ ex_5 <- sf_trees %>%
   unite('id_status', tree_id, legal_status, sep = '_COOL_' )
 ```
 
+### Part 2: make maos 
 
+**Step 1:** convert the lat/lon to spatial point, `st_as_sf()`
 
+```{r}
+blackwood_acacia_sf <- blackwood_acacia_df %>% 
+  drop_na(lat,lon) %>% 
+  st_as_sf(coords = c('lon','lat'))
 
+####we need to tell R what the coordinate reference system is 
+
+st_crs(blackwood_acacia_sf) <- 4326
+
+ggplot(data = blackwood_acacia_sf) + 
+  geom_sf(color = 'darkgreen') +
+  theme_minimal()
+
+```
+
+Read in the SF shapefile and add to map 
+
+```{r}
+sf_map <- read_sf(here('data','sf_map', 'tl_2017_06075_roads.shp'))
+
+sf_map_transform<- st_transform(sf_map, 4326)
+
+ggplot(data = sf_map_transform) +
+  geom_sf()
+
+```
+
+Combine the maps
+
+```{r}
+ggplot() + 
+  geom_sf(data = sf_map,
+          size = .1,
+          color = 'darkgrey') +
+  geom_sf(data = blackwood_acacia_sf,
+          color = 'red',
+          size = 0.5) +
+  theme_void() +
+  labs(title = 'Blackwood acacias in SF')
+```
+
+### Now an interactive map!
+
+```{r}
+tmap_mode('view')
+
+tm_shape(blackwood_acacia_sf)+
+  tm_dots()
+```
 
